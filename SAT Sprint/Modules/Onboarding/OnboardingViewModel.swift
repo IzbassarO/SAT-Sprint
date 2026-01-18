@@ -15,17 +15,17 @@ final class OnboardingViewModel: ObservableObject {
 
     let pages: [OnboardingPage] = [
         .init(
-            imageName: "onb_1",
+            imageName: "onboarding11",
             title: "Smart SAT Prep",
             subtitle: "Short practice. Clear progress."
         ),
         .init(
-            imageName: "onb_2",
+            imageName: "onboarding2",
             title: "Practice Modes",
             subtitle: "Drills, timed sets, full sections."
         ),
         .init(
-            imageName: "onb_3",
+            imageName: "onboarding3",
             title: "Build Confidence",
             subtitle: "Start easy. Add timing later."
         )

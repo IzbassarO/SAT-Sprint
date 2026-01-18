@@ -10,112 +10,107 @@ import SwiftUI
 struct OnboardingView: View {
     let onFinish: () -> Void
     @StateObject private var vm = OnboardingViewModel()
-
-    private let accent = Color(red: 0.06, green: 0.20, blue: 0.55)
-    private let secondary = Color.black.opacity(0.55)
-    private let surface = Color(red: 0.95, green: 0.96, blue: 0.98)
+    
+    private let secondaryOnHero = Color.white.opacity(0.82)
 
     var body: some View {
-        VStack(spacing: 0) {
+        GeometryReader { geo in
+            let safeTop = geo.safeAreaInsets.top
+            let safeBottom = geo.safeAreaInsets.bottom
+            let fullH = geo.size.height + safeTop + safeBottom
 
-            // Top bar: Brand + Skip
-            HStack(spacing: 12) {
-                BrandLockup(assetName: "brand_lockup", height: 26)
-                Spacer()
-
-                Button("Skip") {
-                    onFinish()
-                }
-                .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(secondary)
-                .contentShape(Rectangle())
-            }
-            .padding(.horizontal, 12)
-            .padding(.top, 14)
-            .padding(.bottom, 10)
-            
             ZStack {
-                OnboardingPageContent(
-                    page: vm.pages[vm.index],
-                    accent: accent,
-                    secondary: secondary,
-                    surface: surface
+                Image(vm.pages[vm.index].imageName)
+                    .resizable()
+                    .interpolation(.high)
+                    .scaledToFill()
+                    .frame(width: geo.size.width, height: fullH)
+                    .clipped()
+                    .ignoresSafeArea(.all)
+
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0.0),
+                        .init(color: .clear, location: 0.55),
+                        .init(color: .black.opacity(0.20), location: 0.78),
+                        .init(color: .black.opacity(0.60), location: 1.0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
                 )
-            }
-
-            Spacer(minLength: 0)
-
-            HStack(alignment: .center) {
-                PageDots(count: vm.pages.count, index: vm.index, accent: accent)
-
-                Spacer()
+                .ignoresSafeArea(.all)
+                .allowsHitTesting(false)
                 
-                Button {
-                    vm.back()
-                } label: {
-                    Image("back_blob")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 40)
-                }
-                .buttonStyle(.plain)
-                .padding(.trailing, 6)
-                
-                Button {
-                    if vm.isLast {
-                        onFinish()
-                    } else {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            vm.next()
-                        }
+                VStack(spacing: 0) {
+                    HStack(spacing: 12) {
+                        BrandLockup(assetName: "brand_lockup", height: 26)
+                            .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 6)
+
+                        Spacer()
+
+                        Button("Skip") { onFinish() }
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.white.opacity(0.16), in: Capsule(style: .continuous))
+                            .overlay(
+                                Capsule(style: .continuous)
+                                    .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                            )
                     }
-                } label: {
-                    Image("next_blob")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 40)
+                    .padding(.horizontal, 12)
+
+                    Spacer()
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(vm.pages[vm.index].title)
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+
+                        Text(vm.pages[vm.index].subtitle)
+                            .font(.system(size: 16, weight: .regular, design: .rounded))
+                            .foregroundStyle(secondaryOnHero)
+                            .lineSpacing(3)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 14)
+
+                    HStack(alignment: .center) {
+                        PageDots(count: vm.pages.count, index: vm.index)
+
+                        Spacer()
+
+                        Button { vm.back() } label: {
+                            Image("back_blob")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 40)
+                                .opacity(vm.isFirst ? 0.35 : 1)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(vm.isFirst)
+                        .padding(.trailing, 6)
+
+                        Button {
+                            if vm.isLast { onFinish() }
+                            else { withAnimation(.easeInOut(duration: 0.25)) { vm.next() } }
+                        } label: {
+                            Image("next_blob")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 40)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 10)
                 }
-                .buttonStyle(.plain)
+                .padding(.top, safeTop)
+                .padding(.bottom, safeBottom)
             }
-            .padding(.horizontal, 12)
-            .padding(.bottom, 14)
+            .frame(width: geo.size.width, height: geo.size.height)
         }
-        .background(Color.white.ignoresSafeArea())
-    }
-}
-
-private struct OnboardingPageContent: View {
-    let page: OnboardingPage
-    let accent: Color
-    let secondary: Color
-    let surface: Color
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-
-            OnboardingImageCard(
-                imageName: page.imageName,
-                accent: accent,
-                surface: surface
-            )
-            .padding(.top, 30)
-
-            VStack(alignment: .leading, spacing: 12) {
-                Text(page.title)
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .multilineTextAlignment(.leading)
-                    .padding(.top, 16)
-
-                Text(page.subtitle)
-                    .font(.system(size: 16, weight: .regular, design: .rounded))
-                    .foregroundStyle(secondary)
-                    .multilineTextAlignment(.leading)
-                    .lineSpacing(3)
-            }
-
-            Spacer(minLength: 10)
-        }
-        .padding(.horizontal, 12)
     }
 }
 
