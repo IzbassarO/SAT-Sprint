@@ -13,12 +13,25 @@ struct AppRootView: View {
 
     var body: some View {
         Group {
-            if appState.hasOnboarded {
-                MainTabView()
-            } else {
+            switch appState.flow {
+            case .onboarding:
                 OnboardingView {
-                    appState.hasOnboarded = true
+                    appState.finishOnboarding()
                 }
+                
+            case .intake:
+                RequestView(
+                    onContinue: { appState.finishIntake() }
+                )
+                
+            case .diagnostic:
+                DiagnosticView(
+                    onStart: {  },
+                    onNotNow:  { appState.skipDiagnostic() }
+                )
+                
+            case .main:
+                MainTabView()
             }
         }
     }
