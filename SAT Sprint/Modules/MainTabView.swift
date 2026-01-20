@@ -7,19 +7,21 @@
 
 import SwiftUI
 
+enum MainTab: Hashable {
+    case home, stats, practice, profile
+}
+
 struct MainTabView: View {
+    @State private var tab: MainTab = .home
 
     init() {
         let appearance = UITabBarAppearance()
         appearance.configureWithTransparentBackground()
         appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
         appearance.backgroundColor = UIColor.clear
-
-        // Remove the hairline/shadow
         appearance.shadowColor = .clear
         appearance.shadowImage = UIImage()
 
-        // Optional: make icons/text a bit cleaner
         appearance.stackedLayoutAppearance.normal.iconColor = UIColor.secondaryLabel
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
             .foregroundColor: UIColor.secondaryLabel
@@ -35,17 +37,21 @@ struct MainTabView: View {
     }
 
     var body: some View {
-        TabView {
-            HomeView()
+        TabView(selection: $tab) {
+            HomeView(tab: $tab)
+                .tag(MainTab.home)
                 .tabItem { Label("Home", systemImage: "house") }
 
             StatisticsView()
+                .tag(MainTab.stats)
                 .tabItem { Label("Stats", systemImage: "chart.bar") }
 
             PracticeView()
+                .tag(MainTab.practice)
                 .tabItem { Label("Practice", systemImage: "pencil.and.ruler") }
 
             ProfileView()
+                .tag(MainTab.profile)
                 .tabItem { Label("Profile", systemImage: "person.crop.circle") }
         }
     }
